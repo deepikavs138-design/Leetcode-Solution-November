@@ -1,0 +1,30 @@
+class Solution {
+public:
+    long long minimumCost(int cost1, int cost2, int costBoth, int need1, int need2) {
+        long long c1 = cost1;
+        long long c2 = cost2;
+        long long cB = costBoth;
+        long long n1 = need1;
+        long long n2 = need2;
+        
+        // Find the overlap where we can satisfy both needs together
+        long long bothNeeded = min(n1, n2);
+        long long totalCost = bothNeeded * min(cB, c1 + c2);
+        
+        // Subtract the satisfied amount from both needs
+        n1 -= bothNeeded;
+        n2 -= bothNeeded;
+        
+        // Fulfill any remaining requirement for type 1
+        if (n1 > 0) {
+            totalCost += n1 * min(c1, cB);
+        }
+        
+        // Fulfill any remaining requirement for type 2
+        if (n2 > 0) {
+            totalCost += n2 * min(c2, cB);
+        }
+        
+        return totalCost;
+    }
+};
