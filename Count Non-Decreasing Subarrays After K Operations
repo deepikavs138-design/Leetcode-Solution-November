@@ -1,0 +1,65 @@
+class Solution {
+public:
+    long long countNonDecreasingSubarrays(vector<int>& nums, long long k) {
+        int n = nums.size();
+        vector<long long> pref(n + 1, 0);
+        for (int i = 0; i < n; i++) pref[i + 1] = pref[i] + nums[i];
+
+        // next greater (strictly >)
+        vector<int> nxt(n + 1, n);
+        vector<int> st;
+        for (int i = n - 1; i >= 0; i--) {
+            while (!st.empty() && nums[st.back()] <= nums[i]) st.pop_back();
+            nxt[i] = st.empty() ? n : st.back();
+            st.push_back(i);
+        }
+        nxt[n] = n;
+
+        const int LOG = 17 + 1; // 2^17 > 1e5
+        vector<vector<int>> up(LOG, vector<int>(n + 1));
+        vector<vector<long long>> sum(LOG, vector<long long>(n + 1, 0));
+
+        for (int i = 0; i <= n; i++) {
+            up[0][i] = nxt[i];
+            if (i < n) sum[0][i] = (long long)nums[i] * (nxt[i] - i);
+            else sum[0][i] = 0;
+        }
+        for (int j = 1; j < LOG; j++) {
+            for (int i = 0; i <= n; i++) {
+                int mid = up[j - 1][i];
+                up[j][i] = up[j - 1][mid];
+                sum[j][i] = sum[j - 1][i] + sum[j - 1][mid];
+            }
+        }
+
+        auto sumMax = [&](int l, int r) -> long long {
+            long long res = 0;
+            int cur = l;
+            for (int j = LOG - 1; j >= 0; j--) {
+                int np = up[j][cur];
+                if (np <= r) {
+                    res += sum[j][cur];
+                    cur = np;
+                }
+            }
+            // last block: cur .. r
+            res += (long long)nums[cur] * (r - cur + 1);
+            return res;
+        };
+
+        auto cost = [&](int l, int r) -> long long {
+            if (l > r) return 0;
+            long long sMax = sumMax(l, r);
+            long long sNums = pref[r + 1] - pref[l];
+            return sMax - sNums;
+        };
+
+        long long ans = 0;
+        int l = 0;
+        for (int r = 0; r < n; r++) {
+            while (l <= r && cost(l, r) > k) l++;
+            ans += (r - l + 1);
+        }
+        return ans;
+    }
+};
