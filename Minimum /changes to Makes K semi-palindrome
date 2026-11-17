@@ -1,0 +1,81 @@
+class Solution {
+public:
+    int minimumChanges(string s, int k) {
+        int n = s.size();
+        const int INF = 1e9;
+
+        vector<vector<int>> cost(n,
+                                 vector<int>(n, INF));
+
+        for (int len = 2; len <= n; len++) {
+            for (int start = 0;
+                 start + len - 1 < n;
+                 start++) {
+
+                int end = start + len - 1;
+
+                for (int d = 1; d < len; d++) {
+                    if (len % d) continue;
+
+                    int groups = len / d;
+                    int changes = 0;
+
+                    for (int offset = 0;
+                         offset < d;
+                         offset++) {
+
+                        for (int j = 0;
+                             j < groups / 2;
+                             j++) {
+
+                            int left =
+                                start +
+                                offset +
+                                j * d;
+
+                            int right =
+                                start +
+                                offset +
+                                (groups - 1 - j) * d;
+
+                            if (s[left] != s[right])
+                                changes++;
+                        }
+                    }
+
+                    cost[start][end] =
+                        min(cost[start][end],
+                            changes);
+                }
+            }
+        }
+
+        vector<vector<int>> dp(
+            n + 1,
+            vector<int>(k + 1, INF));
+
+        dp[0][0] = 0;
+
+        for (int parts = 1;
+             parts <= k;
+             parts++) {
+
+            for (int i = 2 * parts;
+                 i <= n;
+                 i++) {
+
+                for (int start = 2 * (parts - 1);
+                     start <= i - 2;
+                     start++) {
+
+                    dp[i][parts] =
+                        min(dp[i][parts],
+                            dp[start][parts - 1]
+                            + cost[start][i - 1]);
+                }
+            }
+        }
+
+        return dp[n][k];
+    }
+};
