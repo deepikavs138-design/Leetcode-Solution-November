@@ -1,0 +1,21 @@
+#include <vector>
+#include <algorithm>
+
+class Solution {
+public:
+    int minimizeSum(std::vector<int>& nums) {
+        int n = nums.size();
+        std::sort(nums.begin(), nums.end());
+        
+        // Option 1: Change the two smallest elements to match the third smallest
+        int diff1 = nums[n - 1] - nums[2];
+        
+        // Option 2: Change the two largest elements to match the third largest
+        int diff2 = nums[n - 3] - nums[0];
+        
+        // Option 3: Change one smallest and one largest element
+        int diff3 = nums[n - 2] - nums[1];
+        
+        return std::min({diff1, diff2, diff3});
+    }
+};
