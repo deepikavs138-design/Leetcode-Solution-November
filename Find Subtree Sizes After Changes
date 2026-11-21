@@ -1,0 +1,51 @@
+#include <vector>
+#include <string>
+#include <array>
+
+using namespace std;
+
+class Solution {
+public:
+    vector<int> findSubtreeSizes(vector<int>& parent, string s) {
+        int n = static_cast<int>(parent.size());
+        vector<vector<int>> origTree(n);
+        for (int i = 1; i < n; ++i) {
+            origTree[parent[i]].push_back(i);
+        }
+
+        vector<vector<int>> newTree(n);
+        array<int, 26> lastSeen;
+        lastSeen.fill(-1);
+
+        auto buildNewTree = [&](auto& self, int u) -> void {
+            int ch = s[u] - 'a';
+            int prevAncestor = lastSeen[ch];
+
+            if (u != 0) {
+                int targetParent = (prevAncestor != -1) ? prevAncestor : parent[u];
+                newTree[targetParent].push_back(u);
+            }
+
+            lastSeen[ch] = u;
+            for (int v : origTree[u]) {
+                self(self, v);
+            }
+            lastSeen[ch] = prevAncestor;
+        };
+
+        buildNewTree(buildNewTree, 0);
+
+        vector<int> ans(n, 0);
+        auto computeSizes = [&](auto& self, int u) -> int {
+            int sz = 1;
+            for (int v : newTree[u]) {
+                sz += self(self, v);
+            }
+            ans[u] = sz;
+            return sz;
+        };
+
+        computeSizes(computeSizes, 0);
+        return ans;
+    }
+};
